@@ -297,8 +297,17 @@ def infer_point(pipeline, data_json: str, save_dir: str) -> None:
         if not os.path.exists(image_file):
             print(f"文件路径{image_file}不存在。")
             continue
+        
+        def npy_to_ply_trimesh(npy_path,):
+            if ".npy" not in npy_path:
+                return npy_path
+            ply_path = npy_path.replace('.npy', '.ply')
+            pts = np.load(npy_path).astype(np.float32)   # shape (N,3)
+            pc = trimesh.points.PointCloud(pts)
+            pc.export(ply_path)
+            return ply_path
 
-
+        mesh_file = npy_to_ply_trimesh(mesh_file)
         mesh = trimesh.load(mesh_file)
         mesh = normalize_mesh(mesh, scale=0.98)
         surface = mesh.vertices
@@ -465,6 +474,7 @@ if __name__ == "__main__":
         print("\n" + "=" * 80)
         print("3. Running Point Cloud Control Inference...")
         point_data_path = "./demos/point/data.json"
+        point_data_path = "./assets/welstory1/9/data.json"
         point_output_dir = os.path.join(args.save_dir, "3domni_point")
         infer_point(pipeline,  point_data_path, point_output_dir)
         print("Finished Point Cloud Control Inference")
